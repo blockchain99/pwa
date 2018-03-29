@@ -22,9 +22,10 @@ self.addEventListener('install', function(event) {
 });
 
 self.addEventListener('activate', function(event) {
-  event.waitUntil(
-    caches.keys()
+  event.waitUntil( //wait until cleanup process finish
+    caches.keys() //get all my keys in cashes storage
       .then(function(keyList) {
+//promise to waite all the operations finish
         return Promise.all(keyList.map(function(key) {
           if (key !== CACHE_STATIC_NAME) {
             return caches.delete(key);
@@ -33,18 +34,23 @@ self.addEventListener('activate', function(event) {
       })
   );
 });
-
+//fetch the precached assets from cachewhen needed
 self.addEventListener('fetch', function(event) {
   event.respondWith(
     caches.match(event.request)
       .then(function(response) {
-        if (response) {
-          return response;
+        if (response) {  //if response exists
+          return response; // response in cache
         } else {
           return fetch(event.request)
+  //get reponse from svr where you request
             .then(function(res) {
+  //store in my dynamic caches
               return caches.open(CACHE_DYNAMIC_NAME)
                 .then(function(cache) {
+  //put (identifier, response got back)
+  //clone-> store one response here,still return
+  //one for user.
                   cache.put(event.request.url, res.clone());
                   return res;
                 });
